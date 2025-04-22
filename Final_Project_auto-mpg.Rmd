@@ -1,0 +1,307 @@
+---
+title: "Final Project"
+author: "Amisha Patel"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r Setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# for pairs.panels()
+library(psych)
+
+library(ggplot2)
+library(knitr)
+
+
+```
+# Visualizations using Tableau Public 
+
+I have generated a series of informative visualizations and assembled them into an interactive dashboard. You can access the visualizations through the Tableau Public link.
+
+**https://public.tableau.com/app/profile/amisha.patel7081/viz/Auto-Mpg/Dashboard2?publish=yes**
+
+The visualizations encompass a scatterplot matrix, a scatterplot depicting Weight versus MPG, and a box plot illustrating the distribution of MPG based on Cylinder count.To provide you with a comprehensive understanding, I've also included screenshots of these visualizations.
+
+
+**[1] Scatterplot Matrix:** This visualization likely showcases a grid of scatterplots. Each scatterplot within the grid corresponds to a pair of variables from your dataset. It's a powerful way to visualize the relationships and correlations between multiple variables simultaneously.
+
+
+```{r echo=FALSE}
+include_graphics("./Images/Matrix.png")
+```
+
+---
+
+**[2] Weight vs. MPG Scatterplot:** This scatterplot specifically focuses on the relationship between two variables: the weight of vehicles and their miles per gallon (MPG) efficiency. Scatterplots are great for identifying trends or patterns in data points between two continuous variables.
+
+
+```{r echo=FALSE}
+include_graphics("./Images/Scatterplot.png")
+```
+
+---
+
+**[3] Distribution of MPG by Cylinder Count (Box Plot):** This visualization is a box plot that showcases the distribution of MPG values based on different levels of cylinder counts. Box plots are excellent for understanding the spread, central tendency, and potential outliers within different categories or groups.
+
+
+```{r echo=FALSE}
+include_graphics("./Images/Boxplot.png")
+```
+
+---
+
+**[4] Dashboard:** The dashboard provides a comprehensive view of the relationships between variables, the impact of vehicle weight on MPG, and the MPG distribution based on cylinder counts. By presenting these visualizations together, viewers can make more informed insights and comparisons from the data.
+
+
+```{r echo=FALSE}
+include_graphics("./Images/Dashboard.png")
+```
+
+---
+
+# Visual plots and Charts using R
+
+```{r Visual plots and charts }
+# Load the data
+data <- read.csv("./auto-mpg.csv", na.strings = c("?", "'"))
+# Here remove ? as value from table
+
+# Check the structure of the data (column names and data types)
+str(data)
+
+# Check the first few rows of the data
+head(data)
+
+# Scatter Plot: mpg vs. horsepower
+# The scatter plot shows the relationship between mpg and horsepower. 
+# It allows us to see if there's any clear pattern or correlation between the two variables.
+plot(data$horsepower, data$mpg, xlab = "Horsepower", ylab = "MPG"
+     , main = "Scatter Plot: MPG vs. Horsepower")
+
+# Box Plot: mpg across different number of cylinders
+# The box plot displays the distribution of mpg across different numbers of cylinders. 
+# It helps us understand how the number of cylinders impacts the fuel efficiency of the vehicles.
+boxplot(mpg ~ cylinder, data = data, xlab = "Number of Cylinders", ylab = "MPG"
+        , main = "Box Plot: MPG across Number of Cylinders")
+
+# Bar Chart: Average mpg by origin
+# The bar chart illustrates the average mpg for each origin (USA, Europe, and Japan),
+# allowing us to compare the fuel efficiency of cars from different regions.
+avg_mpg_by_origin <- tapply(data$mpg, data$origin, mean)
+barplot(avg_mpg_by_origin, names.arg = c("USA", "Europe", "Japan"), xlab = "Origin"
+        , ylab = "Average MPG", main = "Bar Chart: Average MPG by Origin")
+
+# Histogram: Distribution of mpg
+# The histogram shows the distribution of mpg, 
+# providing insights into how fuel efficiency is distributed across the automobile models.
+hist(data$mpg, breaks = "FD", xlab = "MPG", ylab = "Frequency"
+     , main = "Histogram: Distribution of MPG")
+
+# Line Plot: Average mpg over the years
+# The line plot demonstrates the trend in average mpg over the years, 
+# helping us identify any improvements in fuel efficiency over time.
+avg_mpg_by_year <- tapply(data$mpg, data$model.year, mean)
+plot(names(avg_mpg_by_year), avg_mpg_by_year, type = "l", xlab = "Model Year"
+     , ylab = "Average MPG", main = "Line Plot: Average MPG over the Years")
+
+# Take subset of data
+subset_data <- subset(data, select = c(mpg, displacement, horsepower, weight, acceleration))
+subset_data <- na.omit(subset_data)
+
+# Show summary statistics of the subset data
+summary(subset_data)
+
+# Create the scatterplot matrix with correlation ellipses and histograms
+pairs.panels(subset_data, method = "pearson", hist.col = "#00AFBB", density = TRUE, ellipses = TRUE)
+
+```
+
+The pairs.panels() function generates a matrix of scatter plots 
+This output shows three things: the correlation between variables, 
+the scatter plot that shows how the variables relate to each other, 
+and the histograms that show how skewed the data are.
+We see that displacement and displacement are strongly correlated,
+and negatively correlated to the MPG. We also see that there is a multicollinearity  between the independent variables.
+
+```{r }
+
+# Boxplots are useful for understanding the central tendency, spread, 
+# and presence of outliers in each variable.
+par(mfrow=c(2,3))
+for (i in names(subset_data)) {
+  boxplot(subset_data[, i], main = paste("Boxplot of", i))
+}
+```
+
+
+# Simple linear regression and multiple linear regression
+
+```{r Regression}
+
+# First, make sure 'subset_data_First' contains only the first 300 rows
+subset_data_First <- subset_data[1:300, ]
+
+# Simple Linear Regression between mpg and different variables
+slr_hors <- lm(mpg ~ horsepower, data = subset_data)
+slr_dis <- lm(mpg ~ displacement, data = subset_data)
+slr_wie <- lm(mpg ~ weight, data = subset_data)
+slr_acc <- lm(mpg ~ acceleration, data = subset_data)
+
+# Multiple Linear Regression
+mlr <- lm(mpg ~ horsepower + displacement + weight + acceleration, data = subset_data)
+
+# Extracting regression coefficients and summary statistics
+slr_summary_hors <- summary(slr_hors)
+slr_summary_dis <- summary(slr_dis)
+slr_summary_wie <- summary(slr_wie)
+slr_summary_acc <- summary(slr_acc)
+mlr_summary <- summary(mlr)
+
+# Extracting required information
+slr_print_hors <- paste("Simple Linear Regression of mpg~horsepower:\n",
+                   "Multiple R-squared:", slr_summary_hors$r.squared, "\n",
+                   "Adjusted R-squared:", slr_summary_hors$adj.r.squared, "\n",
+                   "Complete Linear Regression equation:\n",
+                   "mpg =", slr_hors$coefficient[1], "+", slr_hors$coefficient[2],
+                   "* horsepower", "\n\n",
+                   sep = "")
+slr_print_dis <- paste("Simple Linear Regression of mpg~displacement:\n",
+                   "Multiple R-squared:", slr_summary_dis$r.squared, "\n",
+                   "Adjusted R-squared:", slr_summary_dis$adj.r.squared, "\n",
+                   "Complete Linear Regression equation:\n",
+                   "mpg =", slr_dis$coefficient[1], "+", slr_dis$coefficient[2],
+                   "* displacement", "\n\n",
+                   sep = "")
+slr_print_wie <- paste("Simple Linear Regression of mpg~weight:\n",
+                   "Multiple R-squared:", slr_summary_wie$r.squared, "\n",
+                   "Adjusted R-squared:", slr_summary_wie$adj.r.squared, "\n",
+                   "Complete Linear Regression equation:\n",
+                   "mpg =", slr_wie$coefficient[1], "+", slr_wie$coefficient[2],
+                   "* weight", "\n\n",
+                   sep = "")
+slr_print_acc <- paste("Simple Linear Regression of mpg~acceleration:\n",
+                   "Multiple R-squared:", slr_summary_acc$r.squared, "\n",
+                   "Adjusted R-squared:", slr_summary_acc$adj.r.squared, "\n",
+                   "Complete Linear Regression equation:\n",
+                   "mpg =", slr_acc$coefficient[1], "+", slr_acc$coefficient[2],
+                   "* acceleration", "\n\n",
+                   sep = "")
+
+
+mlr_print <- paste("Multiple Linear Regression:\n",
+                   "Multiple R-squared:", mlr_summary$r.squared, "\n",
+                   "Adjusted R-squared:", mlr_summary$adj.r.squared, "\n",
+                   "Complete Linear Regression equation:\n",
+                   "mpg =", mlr$coefficients[1], "+", mlr$coefficients[2], "* horsepower \n  +",
+                   mlr$coefficients[3], "* displacement +", mlr$coefficients[4], "* weight \n  +",
+                   mlr$coefficients[5], "* acceleration", "\n")
+
+# Printing the results
+cat(slr_print_hors)
+# Horsepower Model
+par(mfrow=c(2,2))
+plot(slr_hors)
+
+cat(slr_print_dis)
+#Displacement Model
+par(mfrow=c(2,2))
+plot(slr_dis)
+
+cat(slr_print_wie)
+# weight Model
+par(mfrow=c(2,2))
+plot(slr_wie)
+
+cat(slr_print_acc)
+# Acceleration Model
+par(mfrow=c(2,2))
+plot(slr_acc)
+
+cat(mlr_print)
+# Multiple Model
+par(mfrow=c(2,2))
+plot(mlr)
+
+
+
+
+```
+
+# Predictions
+```{r Predictions}
+
+# First, make sure 'subset_data_Last' contains remaining 98 samples
+subset_data_Last <- subset_data[301:398, ]
+
+#HORSEMODEL
+
+#Predict MPG for the remaining 98 samples
+predicted_mpg <- predict(slr_hors, newdata = subset_data_Last)
+
+# Calculate residuals
+residuals <- subset_data_Last$mpg - predicted_mpg
+
+residuals <- residuals[!is.na(residuals)]
+predicted_mpg <- predicted_mpg[!is.na(predicted_mpg)]
+
+# Create a residual plot
+ggplot(data.frame(predicted_mpg, residuals), aes(predicted_mpg, residuals)) +
+  geom_point() + 
+  geom_smooth(method="lm", se=FALSE) +
+  labs(title="Residual Plot ")
+
+#Create a histogram of residuals
+hist(residuals,prob=T,breaks=20,main="HISTOGRAM OF RESIDUALS",xlab="Residuals")
+lines(density(residuals),col="red",lwd=3)
+
+### Calculate and display the comparison #####
+actual_mpg <- subset_data_Last$mpg 
+actual_mpg <- actual_mpg[!is.na(actual_mpg)] 
+
+comparison_df <- data.frame(Actual_MPG = actual_mpg, Predicted_MPG = predicted_mpg)
+print(comparison_df)
+
+# Calculate the Mean Squared Error (MSE) to evaluate the prediction accuracy
+mse <- mean((actual_mpg - predicted_mpg)^2)
+cat("Mean Squared Error (MSE):", mse, "\n")
+
+# Calculate the Root Mean Squared Error (RMSE)
+rmse <- sqrt(mse)
+cat("Root Mean Squared Error (RMSE):", rmse, "\n")
+
+# Calculate the Mean Absolute Error (MAE)
+mae <- mean(abs(actual_mpg - predicted_mpg))
+cat("Mean Absolute Error (MAE):", mae, "\n")
+
+# Visualize differences
+ggplot(data.frame(predicted_mpg, actual_mpg)) +
+  geom_point(aes(predicted_mpg, actual_mpg)) +
+  geom_abline(color="red") +
+  labs(title="Predicted vs Actual MPG", 
+       x="Predicted MPG",
+       y="Actual MPG")
+
+```
+
+To evaluate the accuracy of the predictions, the following metrics have been calculated:
+
+Mean Squared Error (MSE): 42.96081
+Root Mean Squared Error (RMSE): 6.55445
+Mean Absolute Error (MAE): 5.293952
+Interpreting the metrics:
+
+Mean Squared Error (MSE): The MSE measures the average squared difference between the predicted and actual values. A lower MSE indicates better predictive performance. In this case, the MSE is 42.96081, which means, on average, the squared difference between the predicted and actual MPG values is 42.96081.
+
+Root Mean Squared Error (RMSE): The RMSE is the square root of the MSE, and it represents the average absolute difference between the predicted and actual values. It is a widely used metric for regression models. The RMSE here is 6.55445, indicating that, on average, the difference between the predicted and actual MPG values is approximately 6.55445.
+
+Mean Absolute Error (MAE): The MAE measures the average absolute difference between the predicted and actual values. Like the RMSE, it is a common metric for regression models. The MAE value of 5.293952 means that, on average, the absolute difference between the predicted and actual MPG values is 5.293952.
+
+In summary, the regression model's accuracy can be assessed using these metrics. Lower values for MSE, RMSE, and MAE indicate better performance, as they imply that the predictions are closer to the actual values. The specific context and requirements of the application will determine whether these accuracy levels are satisfactory or if further improvements are needed.
+
+
+
+
+
+
