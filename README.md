@@ -5,7 +5,6 @@ This project explores the relationships between various automobile engine and de
 
 ## 🔍 Project Overview
 
-- **Dataset**: `auto-mpg.csv` with 398 automobile records.
 - **Tools Used**: 
   - R programming for data cleaning, visualization, and regression modeling
   - Tableau Public for interactive dashboard visualizations
