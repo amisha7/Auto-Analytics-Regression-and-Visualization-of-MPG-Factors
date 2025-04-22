@@ -32,8 +32,7 @@ Predictions were then made for the remaining 98 samples, and evaluated using:
 - Histogram of residuals
 - RMSE, MAE, and MSE metrics
 
-## 📚 Author
-**Amisha Patel**
+
 
 ---
 
